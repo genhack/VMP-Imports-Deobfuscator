@@ -18,9 +18,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-    - name: Add MSBuild to PATH
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Setup NuGet
@@ -32,10 +33,13 @@ jobs:
     - name: Build with MSBuild
       run: msbuild ${{ env.SOLUTION_FILE_PATH }} /p:Configuration=${{ env.BUILD_CONFIGURATION }}
 
+    - name: List files in the output directory
+      run: dir ${{ github.workspace }}\**\bin\${{ env.BUILD_CONFIGURATION }}
+
     - name: Archive build artifacts
       if: success()
       uses: actions/upload-artifact@v3
       with:
         name: build-artifacts
-        path: |
-          **/bin/${{ env.BUILD_CONFIGURATION }}/
+        path: ${{ github.workspace }}\**\bin\${{ env.BUILD_CONFIGURATION }}
+        if-no-files-found: warn
