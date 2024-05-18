@@ -1,0 +1,35 @@
+name: Build and Upload Executable
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      run: nuget restore VMP-Imports-Deobfuscator.sln
+
+    - name: Build the project
+      run: msbuild VMP-Imports-Deobfuscator.sln /p:Configuration=Release /p:Platform=x64 /m
+
+    - name: List files in the Build directory
+      run: dir "${{github.workspace}}\Build"
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: compiled-binary
+        path: ${{github.workspace}}\Build\VMP-Imports-Deobfuscator.exe
